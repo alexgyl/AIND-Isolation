@@ -213,7 +213,17 @@ class MinimaxPlayer(IsolationPlayer):
             raise SearchTimeout()
 
         # TODO: finish this function!
-        return min_value()
+        ## Check if there are any legal moves for current active player (game is
+        ## the Board class) or if illegal search depth (depth 0) is input
+        legal_moves = game.get_legal_moves()
+        if not legal_moves | depth == 0:
+            return (-1, -1)
+
+        ## Perform minimax checking
+        # Maximizing player
+        
+
+
 
         raise NotImplementedError
 
