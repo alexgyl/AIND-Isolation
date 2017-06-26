@@ -228,7 +228,7 @@ class MinimaxPlayer(IsolationPlayer):
         # At the top of the branch, cycle through all possible moves
         for current_move in legal_moves:
             # Call the min value function and decrease depth (we go one level down)
-            score = self.min_value(game.forecast_move(current_move), depth-1)
+            score = self.minimizer(game.forecast_move(current_move), depth-1)
             if score > best_score:
                 best_score = score
                 best_move = current_move
