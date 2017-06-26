@@ -216,15 +216,68 @@ class MinimaxPlayer(IsolationPlayer):
         ## Check if there are any legal moves for current active player (game is
         ## the Board class) or if illegal search depth (depth 0) is input
         legal_moves = game.get_legal_moves()
-        if not legal_moves | depth == 0:
+        if not legal_moves or depth == 0:
             return (-1, -1)
 
-        ## Perform minimax checking
-        # Maximizing player
-        
+        ## Perform the minimax algorithm here
+        # From either player's POV, the next move will always be a minimizing move
+        # First set the default value if no best move is ever returned & best score 
+        best_move = (-1,-1)
+        best_score = float("-inf")
+
+        # At the top of the branch, cycle through all possible moves
+        for current_move in legal_moves:
+            # Call the min value function and decrease depth (we go one level down)
+            score = self.min_value(game.forecast_move(current_move), depth-1)
+            if score > best_score:
+                best_score = score
+                best_move = current_move
+        return best_move
 
 
+        ## Maximum value function
+        def maximizer(self, game, depth):
+            # Search timeout 
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()           
+            # Terminal depth - return the game score
+            if depth == 0:
+                return self.score(game, self)
+            # No legal moves check - means that we are at the end of the game/branch
+            legal_moves = game.get_legal_moves()
+            if not legal_moves:
+                return game.utility(self)
+            # If all checks are passed, call the minimizer
+            # First, set the worst possible value for the maximizer
+            best_score = float("-inf")
+            for current_move in legal_moves:
+                # Call min value function and decrease depth (we go one level down)
+                score = self.minimizer(game.forecast_move(current_move), depth - 1)
+                if score > best_score:
+                    best_score = score
+            return best_score
 
+        ## Minimum value function
+        def minimizer(self, game, depth):
+            # Search timeout 
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()      
+            # Terminal depth - return the game score
+            if depth == 0:
+                return self.score(game, self)
+            # No legal moves check - means that we are at the end of the game/branch
+            legal_moves = game.get_legal_moves()
+            if not legal_moves:
+                return game.utility(self)
+            # If all checks are passed, call the maximizer
+            # First, set the worst possible value for the minimizer
+            best_score = float("inf")
+            for current_move in legal_moves:
+                # Call the max value function and decrease depth (we go one level down)
+                score = self.maximizer(game.forecast_move(current_move), depth - 1)
+                if score < best_score:
+                    best_score = score
+            return best_score
         raise NotImplementedError
 
 class AlphaBetaPlayer(IsolationPlayer):
