@@ -410,6 +410,10 @@ class AlphaBetaPlayer(IsolationPlayer):
             for current_move in legal_moves:
                 score = minimizer(self, game, depth, alpha, beta)
                 # Alpha-beta pruning conditions
+                if score <= alpha:
+                    return score 
+                beta = minimizer(beta, score)
+            return score
             
         ## Minimizing function with alpha-beta pruning
         def minimizer(self, game, depth, alpha, beta):
