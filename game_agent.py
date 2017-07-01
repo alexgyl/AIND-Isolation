@@ -394,7 +394,22 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         ## Maximizing function with alpha-beta pruning
         def maximizer(self, game, depth, alpha, beta):
-            
+            ## Timeout check
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+            ## No legal moves left
+            legal_moves = game.get_legal_moves()
+            if not legal_moves:
+                return game.utility(self)
+            ## Depth check
+            if depth == 0:
+                return self.score(game, self)
+            ## Maximizer with alpha-beta considerations
+            # Worst possible score for maximizer
+            score = float("-inf")
+            for current_move in legal_moves:
+                score = minimizer(self, game, depth, alpha, beta)
+                # Alpha-beta pruning conditions
             
         ## Minimizing function with alpha-beta pruning
         def minimizer(self, game, depth, alpha, beta):
