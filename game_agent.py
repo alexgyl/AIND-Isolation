@@ -317,9 +317,26 @@ class AlphaBetaPlayer(IsolationPlayer):
             (-1, -1) if there are no available legal moves.
         """
         self.time_left = time_left
+        ## Current best move
+        best_move = (-1, -1)
+        legal_moves = game.get_legal_moves()
+        if not legal_moves:
+            return best_move
+        ## Alpha-beta search
+        try:
+            # Initial depth
+            depth = 1
+            # Iterative deepning
+            while self.time_left() > self.TIMER_THRESHOLD:
+                best_move = self.alphabeta(game, depth)
+                depth += 1
+        except SearchTimeout:
+            return best_move
 
+        return best_move
         # TODO: finish this function!
         raise NotImplementedError
+
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
         """Implement depth-limited minimax search with alpha-beta pruning as
@@ -371,27 +388,6 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         # TODO: finish this function!
 
-        ## Check for legal moves or valid depth
-        legal_moves = game.get_legal_moves()
-        ## Terminal depth
-        if depth == 0:
-            return self.score(game, self)
-        ## No legal moves left
-        if not legal_moves:
-            return game.utility(self)
-        ## Perform alpha-beta search here once checks are done
-        ## Setting the best score for maxmizer & worst cases for alpha-beta
-        best_score = float("-inf")
-        alpha = float("-inf")
-        beta = float("inf")
-        # Perform the search for all legal moves
-        for current_move in legal_moves:
-            score = self.minimizer(game.forecast_move(current_move), depth - 1, alpha = alpha, beta = beta)
-            if score > best_score:
-                best_score = score
-                best_move = current_move
-            return best_move
-
         ## Maximizing function with alpha-beta pruning
         def maximizer(self, game, depth, alpha, beta):
             ## Timeout check
@@ -408,14 +404,57 @@ class AlphaBetaPlayer(IsolationPlayer):
             # Worst possible score for maximizer
             score = float("-inf")
             for current_move in legal_moves:
-                score = minimizer(self, game, depth, alpha, beta)
+                score = max(score, minimizer(self, game.forecast_move(current_move), depth + 1, alpha, beta))
+                # Alpha-beta pruning conditions
+                if score >= beta:
+                    return score 
+                alpha = max(alpha, score)
+            return score
+
+        ## Minimizing function with alpha-beta pruning
+        def minimizer(self, game, depth, alpha, beta):
+            ## Timeout check
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()        
+            ## No legal moves left
+            legal_moves = game.get_legal_moves()
+            if not legal_moves:
+                return game.utility(self)
+            ## Depth check
+            if depth == 0:
+                return self.score(game, self)
+            ## Maximizer with alpha-beta considerations
+            # Worst possible score for maximizer
+            score = float("-inf")
+            for current_move in legal_moves:
+                score = min(score, maximizer(self, game.forecast_move(current_move), depth + 1, alpha, beta))
                 # Alpha-beta pruning conditions
                 if score <= alpha:
                     return score 
-                beta = minimizer(beta, score)
-            return score
-            
-        ## Minimizing function with alpha-beta pruning
-        def minimizer(self, game, depth, alpha, beta):
+                beta = min(beta, score)
+            return score 
+        # --------------- Main body of alpha-beta -----------------------------    
+        ## Check for legal moves or valid depth
+        legal_moves = game.get_legal_moves()
+        ## Terminal depth
+        if depth == 0:
+            return self.score(game, self)
+        ## No legal moves left
+        if not legal_moves:
+            return game.utility(self)
+        ## Perform alpha-beta search here once checks are done
+        ## Setting the best score for maxmizer & worst cases for alpha-beta
+        best_score = float("-inf")
+        alpha = float("-inf")
+        beta = float("inf")
+        # Perform the search for all legal moves
+        for current_move in legal_moves:
+            score = minimizer(self, game.forecast_move(current_move), depth + 1, alpha = alpha, beta = beta)
+            if score > best_score:
+                best_score = score
+                best_move = current_move
+            return best_move
+
+
 
         raise NotImplementedError
