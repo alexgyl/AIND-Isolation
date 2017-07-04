@@ -325,8 +325,8 @@ class AlphaBetaPlayer(IsolationPlayer):
         ## Alpha-beta search
         try:
             # Initial depth
-            max_depth = 1
-            # Iterative deepning - max_depth tracks the maximum depth allowed
+            max_depth = 0
+            # Iterative deepening - max_depth tracks the maximum depth allowed
             while self.time_left() > self.TIMER_THRESHOLD:
                 best_move = self.alphabeta(game, max_depth)
                 max_depth += 1
@@ -453,6 +453,8 @@ class AlphaBetaPlayer(IsolationPlayer):
             if score > best_score:
                 best_score = score
                 best_move = current_move
-            return best_move
-
+            alpha = max(alpha, score)
+        ## Returning the best move possible
+        return best_move
+        
         raise NotImplementedError
