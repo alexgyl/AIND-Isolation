@@ -423,9 +423,9 @@ class AlphaBetaPlayer(IsolationPlayer):
             ## Depth check
             if depth == 0:
                 return self.score(game, self)
-            ## Maximizer with alpha-beta considerations
-            # Worst possible score for maximizer
-            score = float("-inf")
+            ## Minimizer with alpha-beta considerations
+            # Worst possible score for minimizer
+            score = float("inf")
             for current_move in legal_moves:
                 score = min(score, maximizer(self, game.forecast_move(current_move), depth - 1, alpha, beta))
                 # Alpha-beta pruning conditions
