@@ -3,7 +3,8 @@ test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
 """
 import random
-
+import math
+import numpy as np
 
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
@@ -35,8 +36,19 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    ## Game condition checks
+    if game.is_loser(player):
+        return float("-inf")
 
+    if game.is_winner(player):
+        return float("inf")
+
+    ## Number of my moves vs exponential number of opponent moves heuristic
+    # Punishes player more heavily if opponent has more moves
+    num_player_moves = len(game.get_legal_moves(player))
+    num_opponent_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    score = float(num_player_moves - math.exp(num_opponent_moves))
+    return score
 
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -61,8 +73,38 @@ def custom_score_2(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    ## Game condition checks
+    if game.is_loser(player):
+        return float("-inf")
 
+    if game.is_winner(player):
+        return float("inf")
+    ## Comparing euclidean distance to the nearest corner of the board for player
+    width = game.width
+    height = game.height
+    corners = [(0, 0), (0, width), (height, 0), (width, height)]
+    # corner_1 = (0, 0)
+    # corner_2 = (0, width)
+    # corner_3 = (height, 0)
+    # corner_4 = (width, height)
+    nearest = float("inf")
+    nearest_corner = None
+    ## Player to closest corner
+    for corner in corners:
+        p_location = np.array(game.get_player_location(player))
+        t_corner = np.array(corner)
+        dist = np.linalg.norm(p_location - t_corner)
+        if(dist < nearest):
+            nearest = dist
+            nearest_corner = corner
+
+    ## Check opponents euclidean distance to nearest corner
+    oppo_dist = np.linalg.norm(np.array(game.get_player_location(game.get_opponent(player))) - np.array(nearest_corner))
+    # Compare distance - if player is further from the corner, we are in a better situation
+    # Less likely to be cornered
+    score = float(math.exp(nearest - oppo_dist))
+
+    return score
 
 def custom_score_3(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -87,8 +129,21 @@ def custom_score_3(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    ## Game condition checks
+    if game.is_loser(player):
+        return float("-inf")
 
+    if game.is_winner(player):
+        return float("inf")
+    ## Similar to custom score 1 but here we will use the # of blank spaces left
+    # If player has more moves than its opponent, a game state where more blank spaces
+    # are left should be worth LESS than one where less blank spaces are left.
+    # This stems from the idea that I have MORE moves than you and there's less spaces
+    # left, hence I should have a higher chance to win than you do.
+    num_player_moves = len(game.get_legal_moves(player))
+    num_opponent_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    score = float(num_player_moves - (math.exp(num_opponent_moves/len(game.get_blank_spaces()))))
+    return score
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
@@ -447,6 +502,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         best_score = float("-inf")
         alpha = float("-inf")
         beta = float("inf")
+        best_move = None
         # Perform the search for all legal moves
         for current_move in legal_moves:
             score = minimizer(self, game.forecast_move(current_move), depth - 1, alpha, beta)
