@@ -42,13 +42,18 @@ def custom_score(game, player):
 
     if game.is_winner(player):
         return float("inf")
-
-    ## Number of my moves vs exponential number of opponent moves heuristic
-    # Punishes player more heavily if opponent has more moves
+    ## Combining several heuristics together
+    # 1. Punish the difference between moves
+    # 2. Calculate distance away from center of the board (better to be further)
     num_player_moves = len(game.get_legal_moves(player))
     num_opponent_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    score = float(num_player_moves - math.exp(num_opponent_moves))
-    return score
+    score1 = float((num_player_moves - math.exp(num_opponent_moves)) * len(game.get_blank_spaces()))
+    # Center distance 
+    w, h = game.width / 2., game.height / 2.
+    y, x = game.get_player_location(player)
+    score2 = float((h - y)**2 + (w - x)**2)
+
+    return float(score1 + score2)
 
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -135,15 +140,14 @@ def custom_score_3(game, player):
 
     if game.is_winner(player):
         return float("inf")
-    ## Similar to custom score 1 but here we will use the # of blank spaces left
-    # If player has more moves than its opponent, a game state where more blank spaces
-    # are left should be worth LESS than one where less blank spaces are left.
-    # This stems from the idea that I have MORE moves than you and there's less spaces
-    # left, hence I should have a higher chance to win than you do.
+
+    ## Number of my moves vs exponential number of opponent moves heuristic
+    # Punishes player more heavily if opponent has more moves
     num_player_moves = len(game.get_legal_moves(player))
     num_opponent_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    score = float(num_player_moves - (math.exp(num_opponent_moves/len(game.get_blank_spaces()))))
+    score = float((num_player_moves - math.exp(num_opponent_moves)) * len(game.get_blank_spaces()))
     return score
+
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
